@@ -1,5 +1,5 @@
-'use strict';
 /* eslint-disable */
+'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
@@ -1055,7 +1055,9 @@ var ContextMenu = function ContextMenu(_ref) {
 
   var handleOptionSelected = function handleOptionSelected(option) {
     onOptionSelected(option);
-    onRequestClose();
+    //start perp edit
+    //onRequestClose();
+    //end perp edit
   };
 
   var testClickOutside = React__default.useCallback(function (e) {
@@ -4390,6 +4392,7 @@ var Stage = function Stage(_ref) {
       numNodes = _ref.numNodes,
       stageRef = _ref.stageRef,
       spaceToPan = _ref.spaceToPan,
+      manualDispatchNodes = _ref.manualDispatchNodes,
       dispatchComments = _ref.dispatchComments,
       disableComments = _ref.disableComments,
       disablePan = _ref.disablePan,
@@ -4417,6 +4420,38 @@ var Stage = function Stage(_ref) {
       spaceIsPressed = _React$useState6[0],
       setSpaceIsPressed = _React$useState6[1];
 
+  //start perp edit
+
+
+  var menuOptionsStage1stRight = React__default.useMemo(function () {
+    var options = orderBy_1(Object.values(nodeTypes).filter(function (node) {
+      return node.addable !== false;
+    }).map(function (node) {
+      return {
+        value: node.type,
+        label: node.label,
+        description: node.description,
+        sortIndex: node.sortIndex,
+        node: node
+      };
+    }), ["sortIndex", "label"]);
+
+    options.unshift({ value: "get_variable", label: "Get Variable", description: "retrieve a previously created variable", internalType: "get_variable" });
+    options.unshift({ value: "call_function", label: "Call Function", description: "This node is how you call/run a previously created function", internalType: "call_function" });
+
+    if (!disableComments) {
+      options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" });
+    }
+    return options;
+  }, [nodeTypes, disableComments]);
+
+  var _React$useState7 = React__default.useState(menuOptionsStage1stRight),
+      _React$useState8 = slicedToArray(_React$useState7, 2),
+      menuOptions = _React$useState8[0],
+      setMenuOptions = _React$useState8[1];
+  //end perp edit
+
+
   var setStageRect = React__default.useCallback(function () {
     stageRef.current = wrapper.current.getBoundingClientRect();
   }, []);
@@ -4426,10 +4461,9 @@ var Stage = function Stage(_ref) {
   var functionList = [];
   for (var i in nodes) {
     if (nodes[i].type === "function") {
-      functionList.push(nodes[i].inputData);
+      functionList.push(nodes[i]);
     }
   }
-
   //end perp edit
 
   React__default.useEffect(function () {
@@ -4529,6 +4563,9 @@ var Stage = function Stage(_ref) {
 
   var closeContextMenu = function closeContextMenu() {
     setMenuOpen(false);
+    //start perp edit
+    setMenuOptions(menuOptionsStage1stRight);
+    //end perp edit
   };
 
   var byScale = function byScale(value) {
@@ -4543,6 +4580,10 @@ var Stage = function Stage(_ref) {
     var x = byScale(menuCoordinates.x - wrapperRect.x - wrapperRect.width / 2) + byScale(translate.x);
     var y = byScale(menuCoordinates.y - wrapperRect.y - wrapperRect.height / 2) + byScale(translate.y);
     if (internalType === "comment") {
+      //start perp edit
+      setMenuOpen(false);
+      setMenuOptions(menuOptionsStage1stRight);
+      //end perp edit
       dispatchComments({
         type: "ADD_COMMENT",
         x: x,
@@ -4552,12 +4593,48 @@ var Stage = function Stage(_ref) {
       //start perp edit
       //When new option on context menu is clicked
     } else if (internalType === "get_variable") {
+
+      setMenuOptions([{
+        label: "variable",
+        value: "variable",
+        description: "variable description"
+      }]);
+
       console.log("create a new ContextMenu for get_variable");
     } else if (internalType === "call_function") {
-      console.log("create a new ContextMenu for call_function : ", functionList);
+
+      var functionNameList = [];
+      for (var _i in functionList) {
+        functionNameList.push({ label: functionList[_i].inputData.functionName.string, value: functionList[_i].inputData.functionName.string, description: "", sortIndex: _i, node: { label: "call function " + functionList[_i].inputData.functionName.string, value: "call function " + functionList[_i].inputData.functionName.string, details: functionList[_i] } });
+      }
+      setMenuOptions(functionNameList);
+    } else if (node.label.startsWith("call function ")) {
+
+      console.log("create node :", node.details);
+
+      dispatchNodes({
+        type: "ADD_CALL_FUNCTION_NODE",
+        x: x,
+        y: y,
+        nodeType: node.details
+      });
+
+      setMenuOptions(menuOptionsStage1stRight);
+      setMenuOpen(false);
+    } else if (node.label.startsWith("get variable ")) {
+
+      console.log("create node :", node.details);
+
+      setMenuOptions(menuOptionsStage1stRight);
+      setMenuOpen(false);
 
       //end perp edit
     } else {
+      //start perp edit
+      setMenuOpen(false);
+      setMenuOptions(menuOptionsStage1stRight);
+      console.log("create this node", node);
+      //end perp edit
       dispatchNodes({
         type: "ADD_NODE",
         x: x,
@@ -4599,32 +4676,29 @@ var Stage = function Stage(_ref) {
     }
   }, [handleWheel, disableZoom]);
 
-  var menuOptions = React__default.useMemo(function () {
-    var options = orderBy_1(Object.values(nodeTypes).filter(function (node) {
-      return node.addable !== false;
-    }).map(function (node) {
-      return {
-        value: node.type,
-        label: node.label,
-        description: node.description,
-        sortIndex: node.sortIndex,
-        node: node
-      };
-    }), ["sortIndex", "label"]);
-
-    //start perp edit
-    //add more option to the right click context menu
-    options.unshift({ value: "get_variable", label: "Get Variable", description: "retrieve a previously created variable", internalType: "get_variable" });
-
-    options.unshift({ value: "call_function", label: "Call Function", description: "This node is how you call/run a previously created function", internalType: "call_function" });
-
-    //end perp edit
-
-    if (!disableComments) {
-      options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" });
-    }
-    return options;
-  }, [nodeTypes, disableComments]);
+  //start perp edit
+  // const menuOptions = React.useMemo(
+  //   () => {
+  //     const options = orderBy(
+  //       Object.values(nodeTypes)
+  //         .filter(node => node.addable !== false)
+  //         .map(node => ({
+  //           value: node.type,
+  //           label: node.label,
+  //           description: node.description,
+  //           sortIndex: node.sortIndex,
+  //           node
+  //         })),
+  //       ["sortIndex", "label"]
+  //     )
+  //     if (!disableComments) {
+  //       options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" })
+  //     }
+  //     return options
+  //   },
+  //   [nodeTypes, disableComments]
+  // );
+  //end perp edit
 
   return React__default.createElement(
     Draggable,
@@ -6082,17 +6156,57 @@ var Node = function Node(_ref) {
       onDragStart = _ref.onDragStart,
       renderNodeHeader = _ref.renderNodeHeader;
 
+
   var cache = React__default.useContext(CacheContext);
   var nodeTypes = React__default.useContext(NodeTypesContext);
   var nodesDispatch = React__default.useContext(NodeDispatchContext);
   var stageState = React__default.useContext(StageContext);
-  var currentNodeType = nodeTypes[type];
-  var label = currentNodeType.label,
-      deletable = currentNodeType.deletable,
-      _currentNodeType$inpu = currentNodeType.inputs,
+
+  //start perp edit
+
+  var currentNodeType = "";
+
+  if (type.startsWith("call function ")) {
+
+    currentNodeType = {
+      type: type,
+      label: type,
+      description: type,
+      addable: true,
+      deletable: true,
+      inputs: [{
+        color: "grey",
+        controls: [],
+        hidePort: false,
+        label: "Power",
+        name: "power",
+        noControls: false,
+        type: "power"
+      }, {
+        color: "red",
+        controls: [{
+          defaultValue: false,
+          label: "True/False",
+          name: "boolean",
+          setValue: undefined,
+          type: "checkbox"
+        }]
+      }],
+      outputs: []
+    };
+  } else {
+    currentNodeType = nodeTypes[type];
+  }
+
+  // const currentNodeType = nodeTypes[type];
+  var _currentNodeType = currentNodeType,
+      label = _currentNodeType.label,
+      deletable = _currentNodeType.deletable,
+      _currentNodeType$inpu = _currentNodeType.inputs,
       inputs = _currentNodeType$inpu === undefined ? [] : _currentNodeType$inpu,
-      _currentNodeType$outp = currentNodeType.outputs,
+      _currentNodeType$outp = _currentNodeType.outputs,
       outputs = _currentNodeType$outp === undefined ? [] : _currentNodeType$outp;
+  //end perp edit
 
 
   var nodeWrapper = React__default.useRef();
@@ -7376,6 +7490,35 @@ var nodesReducer = function nodesReducer(nodes) {
         return _extends({}, nodes, defineProperty({}, newNodeId, newNode));
       }
 
+    //start perp edit
+    case "ADD_CALL_FUNCTION_NODE":
+      {
+        var _x4 = action.x,
+            _y = action.y,
+            _nodeType = action.nodeType,
+            _id2 = action.id,
+            _defaultNode = action.defaultNode;
+
+        var _newNodeId = _id2 || nanoid(10);
+        console.log("From Node Reducer - nodeType: ", _nodeType);
+        var _newNode = {
+          id: _newNodeId,
+          x: _x4,
+          y: _y,
+          type: "call function " + _nodeType.inputData.functionName.string,
+          width: 200,
+          connections: {
+            inputs: {},
+            outputs: {}
+          },
+          inputData: {}
+        };
+
+        return _extends({}, nodes, defineProperty({}, _newNodeId, _newNode));
+      }
+
+    //end perp edit
+
     case "REMOVE_NODE":
       {
         var nodeId = action.nodeId;
@@ -7388,13 +7531,13 @@ var nodesReducer = function nodesReducer(nodes) {
         var _newNodes = _extends({}, nodes);
         for (var key in _newNodes) {
           if (_newNodes[key].defaultNode) {
-            var _newNodeId = nanoid(10);
+            var _newNodeId2 = nanoid(10);
             var _newNodes$key = _newNodes[key],
-                _id2 = _newNodes$key.id,
-                _defaultNode = _newNodes$key.defaultNode,
+                _id3 = _newNodes$key.id,
+                _defaultNode2 = _newNodes$key.defaultNode,
                 node = objectWithoutProperties(_newNodes$key, ["id", "defaultNode"]);
 
-            _newNodes[_newNodeId] = _extends({}, node, { id: _newNodeId });
+            _newNodes[_newNodeId2] = _extends({}, node, { id: _newNodeId2 });
             delete _newNodes[key];
           }
         }
@@ -7420,13 +7563,13 @@ var nodesReducer = function nodesReducer(nodes) {
 
     case "SET_NODE_COORDINATES":
       {
-        var _x4 = action.x,
-            _y = action.y,
+        var _x5 = action.x,
+            _y2 = action.y,
             _nodeId2 = action.nodeId;
 
         return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2], {
-          x: _x4,
-          y: _y
+          x: _x5,
+          y: _y2
         })));
       }
 
@@ -7876,6 +8019,7 @@ exports.NodeEditor = function NodeEditor(_ref, ref) {
                         spaceToPan: spaceToPan,
                         disablePan: disablePan,
                         disableZoom: disableZoom,
+                        manualDispatchNodes: dispatchNodes,
                         dispatchStageState: dispatchStageState,
                         dispatchComments: dispatchComments,
                         disableComments: disableComments || hideComments,
