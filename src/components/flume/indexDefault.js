@@ -88,7 +88,6 @@ if (process.env.NODE_ENV !== "production") ;
 if (process.env.NODE_ENV !== "production") ;
 
 if (process.env.NODE_ENV !== "production") ;
-//# sourceMappingURL=utils.esm.js.map
 
 /*
  * Welcome to @reach/auto-id!
@@ -199,7 +198,6 @@ var useId = function useId(idFromProps) {
   }, []);
   return id != null ? String(id) : undefined;
 };
-//# sourceMappingURL=auto-id.esm.js.map
 
 function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
@@ -1055,9 +1053,7 @@ var ContextMenu = function ContextMenu(_ref) {
 
   var handleOptionSelected = function handleOptionSelected(option) {
     onOptionSelected(option);
-    //start perp edit
-    //onRequestClose();
-    //end perp edit
+    onRequestClose();
   };
 
   var testClickOutside = React__default.useCallback(function (e) {
@@ -4382,8 +4378,7 @@ var DRAG_CONNECTION_ID = '__node_editor_drag_connection__';
 var CONNECTIONS_ID = '__node_editor_connections__';
 
 var Stage = function Stage(_ref) {
-  var nodes = _ref.nodes,
-      scale = _ref.scale,
+  var scale = _ref.scale,
       translate = _ref.translate,
       editorId = _ref.editorId,
       dispatchStageState = _ref.dispatchStageState,
@@ -4392,7 +4387,6 @@ var Stage = function Stage(_ref) {
       numNodes = _ref.numNodes,
       stageRef = _ref.stageRef,
       spaceToPan = _ref.spaceToPan,
-      manualDispatchNodes = _ref.manualDispatchNodes,
       dispatchComments = _ref.dispatchComments,
       disableComments = _ref.disableComments,
       disablePan = _ref.disablePan,
@@ -4420,51 +4414,9 @@ var Stage = function Stage(_ref) {
       spaceIsPressed = _React$useState6[0],
       setSpaceIsPressed = _React$useState6[1];
 
-  //start perp edit
-
-
-  var menuOptionsStage1stRight = React__default.useMemo(function () {
-    var options = orderBy_1(Object.values(nodeTypes).filter(function (node) {
-      return node.addable !== false;
-    }).map(function (node) {
-      return {
-        value: node.type,
-        label: node.label,
-        description: node.description,
-        sortIndex: node.sortIndex,
-        node: node
-      };
-    }), ["sortIndex", "label"]);
-
-    options.unshift({ value: "get_variable", label: "Get Variable", description: "retrieve a previously created variable", internalType: "get_variable" });
-    options.unshift({ value: "call_function", label: "Call Function", description: "This node is how you call/run a previously created function", internalType: "call_function" });
-
-    if (!disableComments) {
-      options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" });
-    }
-    return options;
-  }, [nodeTypes, disableComments]);
-
-  var _React$useState7 = React__default.useState(menuOptionsStage1stRight),
-      _React$useState8 = slicedToArray(_React$useState7, 2),
-      menuOptions = _React$useState8[0],
-      setMenuOptions = _React$useState8[1];
-  //end perp edit
-
-
   var setStageRect = React__default.useCallback(function () {
     stageRef.current = wrapper.current.getBoundingClientRect();
   }, []);
-
-  //start perp edit
-  //create function list
-  var functionList = [];
-  for (var i in nodes) {
-    if (nodes[i].type === "function") {
-      functionList.push(nodes[i]);
-    }
-  }
-  //end perp edit
 
   React__default.useEffect(function () {
     stageRef.current = wrapper.current.getBoundingClientRect();
@@ -4563,9 +4515,6 @@ var Stage = function Stage(_ref) {
 
   var closeContextMenu = function closeContextMenu() {
     setMenuOpen(false);
-    //start perp edit
-    setMenuOptions(menuOptionsStage1stRight);
-    //end perp edit
   };
 
   var byScale = function byScale(value) {
@@ -4580,61 +4529,12 @@ var Stage = function Stage(_ref) {
     var x = byScale(menuCoordinates.x - wrapperRect.x - wrapperRect.width / 2) + byScale(translate.x);
     var y = byScale(menuCoordinates.y - wrapperRect.y - wrapperRect.height / 2) + byScale(translate.y);
     if (internalType === "comment") {
-      //start perp edit
-      setMenuOpen(false);
-      setMenuOptions(menuOptionsStage1stRight);
-      //end perp edit
       dispatchComments({
         type: "ADD_COMMENT",
         x: x,
         y: y
       });
-
-      //start perp edit
-      //When new option on context menu is clicked
-    } else if (internalType === "get_variable") {
-
-      setMenuOptions([{
-        label: "variable",
-        value: "variable",
-        description: "variable description"
-      }]);
-
-      console.log("create a new ContextMenu for get_variable");
-    } else if (internalType === "call_function") {
-
-      var functionNameList = [];
-      for (var _i in functionList) {
-        functionNameList.push({ label: functionList[_i].inputData.functionName.string, value: functionList[_i].inputData.functionName.string, description: "", sortIndex: _i, node: { label: "call function " + functionList[_i].inputData.functionName.string, value: "call function " + functionList[_i].inputData.functionName.string, details: functionList[_i] } });
-      }
-      setMenuOptions(functionNameList);
-    } else if (node.label.startsWith("call function ")) {
-
-      console.log("create node :", node.details);
-
-      dispatchNodes({
-        type: "ADD_CALL_FUNCTION_NODE",
-        x: x,
-        y: y,
-        nodeType: node.details
-      });
-
-      setMenuOptions(menuOptionsStage1stRight);
-      setMenuOpen(false);
-    } else if (node.label.startsWith("get variable ")) {
-
-      console.log("create node :", node.details);
-
-      setMenuOptions(menuOptionsStage1stRight);
-      setMenuOpen(false);
-
-      //end perp edit
     } else {
-      //start perp edit
-      setMenuOpen(false);
-      setMenuOptions(menuOptionsStage1stRight);
-      console.log("create this node", node);
-      //end perp edit
       dispatchNodes({
         type: "ADD_NODE",
         x: x,
@@ -4676,29 +4576,23 @@ var Stage = function Stage(_ref) {
     }
   }, [handleWheel, disableZoom]);
 
-  //start perp edit
-  // const menuOptions = React.useMemo(
-  //   () => {
-  //     const options = orderBy(
-  //       Object.values(nodeTypes)
-  //         .filter(node => node.addable !== false)
-  //         .map(node => ({
-  //           value: node.type,
-  //           label: node.label,
-  //           description: node.description,
-  //           sortIndex: node.sortIndex,
-  //           node
-  //         })),
-  //       ["sortIndex", "label"]
-  //     )
-  //     if (!disableComments) {
-  //       options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" })
-  //     }
-  //     return options
-  //   },
-  //   [nodeTypes, disableComments]
-  // );
-  //end perp edit
+  var menuOptions = React__default.useMemo(function () {
+    var options = orderBy_1(Object.values(nodeTypes).filter(function (node) {
+      return node.addable !== false;
+    }).map(function (node) {
+      return {
+        value: node.type,
+        label: node.label,
+        description: node.description,
+        sortIndex: node.sortIndex,
+        node: node
+      };
+    }), ["sortIndex", "label"]);
+    if (!disableComments) {
+      options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" });
+    }
+    return options;
+  }, [nodeTypes, disableComments]);
 
   return React__default.createElement(
     Draggable,
@@ -4752,7 +4646,7 @@ var Stage = function Stage(_ref) {
   );
 };
 
-var css$2 = ".Node_wrapper__3SmT7{\n  border-radius: 5px;\n  box-shadow: 0px 4px 8px rgba(0,0,0,.4);\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  user-select: none;\n  display: flex;\n  flex-direction: column;\n  z-index: 1;\n  cursor: default;\n}\n.Node_label__3MmhF{\n  font-size: 13px;\n  text-transform: uppercase;\n  padding: 5px;\n  background: #464b4e;\n  border-radius: 5px 5px 0px 0px;\n  margin: 0px;\n  margin-bottom: 3px;\n  border-bottom: 1px solid rgba(0,0,0,.15);\n}\n";
+var css$2 = ".Node_wrapper__3SmT7{\n  background: rgba(91, 96, 99, 0.9);\n  border-radius: 5px;\n  box-shadow: 0px 4px 8px rgba(0,0,0,.4);\n  position: absolute;\n  left: 0px;\n  top: 0px;\n  user-select: none;\n  display: flex;\n  flex-direction: column;\n  z-index: 1;\n  cursor: default;\n}\n.Node_label__3MmhF{\n  font-size: 13px;\n  text-transform: uppercase;\n  padding: 5px;\n  background: #464b4e;\n  border-radius: 5px 5px 0px 0px;\n  margin: 0px;\n  margin-bottom: 3px;\n  border-bottom: 1px solid rgba(0,0,0,.15);\n}\n";
 var styles$2 = { "wrapper": "Node_wrapper__3SmT7", "label": "Node_label__3MmhF" };
 styleInject(css$2);
 
@@ -5311,7 +5205,7 @@ var createConnections = function createConnections(nodes, _ref6, editorId) {
   }
 };
 
-var css$4 = ".IoPorts_wrapper__3d2hh{\n  display: flex;\n  flex-direction: column;\n  margin-top: auto;\n  width: 100%;\n  padding: 5px;\n}\n.IoPorts_inputs__2etkb{\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n  width: 100%;\n  margin-bottom: 10px;\n}\n.IoPorts_inputs__2etkb:last-child{\n    margin-bottom: 0px;\n  }\n.IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:first-child .IoPorts_portLabel__qOE7y, .IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:first-child .IoPorts_port__1_a6J{\n        margin-top: 5px;\n      }\n.IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:last-child .IoPorts_portLabel__qOE7y, .IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:last-child .IoPorts_port__1_a6J{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__3JGh-{\n  display: flex;\n  flex-direction: column;\n  margin-left: auto;\n  justify-content: flex-end;\n  align-items: flex-end;\n  width: 100%;\n}\n.IoPorts_outputs__3JGh- .IoPorts_transput__1wbHA:last-child .IoPorts_portLabel__qOE7y, .IoPorts_outputs__3JGh- .IoPorts_transput__1wbHA:last-child .IoPorts_port__1_a6J{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__3JGh-:first-child{\n    margin-top: 5px;\n  }\n.IoPorts_transput__1wbHA{\n  display: flex;\n  align-items: center;\n  margin-top: 6px;\n  margin-bottom: 6px;\n}\n.IoPorts_transput__1wbHA:first-child{\n    margin-top: 0px;\n  }\n.IoPorts_transput__1wbHA[data-controlless=\"true\"]{\n    margin-top: 6px;\n    margin-bottom: 6px;\n  }\n.IoPorts_transput__1wbHA[data-controlless=\"true\"]:first-child{\n      margin-top: 0px;\n    }\n.IoPorts_transput__1wbHA[data-controlless=\"false\"]{\n    margin-top: 2px;\n    margin-bottom: 2px;\n  }\n.IoPorts_controls__1dKFt{\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n}\n.IoPorts_portLabel__qOE7y{\n  font-size: 13px;\n  font-weight: 400;\n}\n.IoPorts_port__1_a6J{\n  width: 20px;\n  height: 20px;\n  background: linear-gradient(to bottom, #acb1b4, #919699);\n  border-radius: 100%;\n  margin-right: 5px;\n  margin-left: -11px;\n  flex: 0 0 auto;\n  box-shadow: 0px 2px 1px 0px rgba(0,0,0,.6);\n}\n.IoPorts_port__1_a6J:last-child{\n    margin-right: -11px;\n    margin-left: 5px;\n  }\n.IoPorts_port__1_a6J[data-port-color=\"red\"]{\n    background: linear-gradient(to bottom, #fa4a6f, #c22e4d);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"purple\"]{\n    background: linear-gradient(to bottom, #9e55fb, #6024b6);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"blue\"]{\n    background: linear-gradient(to bottom, #4284f7, #2867d4);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"green\"]{\n    background: linear-gradient(to bottom, #31dd9f, #11ad7a);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"yellow\"]{\n    background: linear-gradient(to bottom, #d6bf47, #9d8923);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"orange\"]{\n    background: linear-gradient(to bottom, #fa7841, #c94b23);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"pink\"]{\n    background: linear-gradient(to bottom, #fe8aeb, #e046c3);\n  }\n";
+var css$4 = ".IoPorts_wrapper__3d2hh{\n  display: flex;\n  flex-direction: column;\n  margin-top: auto;\n  width: 100%;\n  padding: 5px;\n}\n.IoPorts_inputs__2etkb{\n  display: flex;\n  flex-direction: column;\n  justify-content: flex-end;\n  width: 100%;\n  margin-bottom: 10px;\n}\n.IoPorts_inputs__2etkb:last-child{\n    margin-bottom: 0px;\n  }\n.IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:first-child .IoPorts_portLabel__qOE7y, .IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:first-child .IoPorts_port__1_a6J{\n        margin-top: 5px;\n      }\n.IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:last-child .IoPorts_portLabel__qOE7y, .IoPorts_inputs__2etkb .IoPorts_transput__1wbHA:last-child .IoPorts_port__1_a6J{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__3JGh-{\n  display: flex;\n  flex-direction: column;\n  margin-left: auto;\n  justify-content: flex-end;\n  align-items: flex-end;\n  width: 100%;\n}\n.IoPorts_outputs__3JGh- .IoPorts_transput__1wbHA:last-child .IoPorts_portLabel__qOE7y, .IoPorts_outputs__3JGh- .IoPorts_transput__1wbHA:last-child .IoPorts_port__1_a6J{\n        margin-bottom: 5px;\n      }\n.IoPorts_outputs__3JGh-:first-child{\n    margin-top: 5px;\n  }\n.IoPorts_transput__1wbHA{\n  display: flex;\n  align-items: center;\n  margin-top: 6px;\n  margin-bottom: 6px;\n}\n.IoPorts_transput__1wbHA:first-child{\n    margin-top: 0px;\n  }\n.IoPorts_transput__1wbHA[data-controlless=\"true\"]{\n    margin-top: 6px;\n    margin-bottom: 6px;\n  }\n.IoPorts_transput__1wbHA[data-controlless=\"true\"]:first-child{\n      margin-top: 0px;\n    }\n.IoPorts_transput__1wbHA[data-controlless=\"false\"]{\n    margin-top: 2px;\n    margin-bottom: 2px;\n  }\n.IoPorts_controls__1dKFt{\n  display: flex;\n  flex-direction: column;\n  width: 100%;\n}\n.IoPorts_portLabel__qOE7y{\n  font-size: 13px;\n  font-weight: 400;\n}\n.IoPorts_port__1_a6J{\n  width: 12px;\n  height: 12px;\n  background: linear-gradient(to bottom, #acb1b4, #919699);\n  border-radius: 100%;\n  margin-right: 5px;\n  margin-left: -11px;\n  flex: 0 0 auto;\n  box-shadow: 0px 2px 1px 0px rgba(0,0,0,.6);\n}\n.IoPorts_port__1_a6J:last-child{\n    margin-right: -11px;\n    margin-left: 5px;\n  }\n.IoPorts_port__1_a6J[data-port-color=\"red\"]{\n    background: linear-gradient(to bottom, #fa4a6f, #c22e4d);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"purple\"]{\n    background: linear-gradient(to bottom, #9e55fb, #6024b6);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"blue\"]{\n    background: linear-gradient(to bottom, #4284f7, #2867d4);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"green\"]{\n    background: linear-gradient(to bottom, #31dd9f, #11ad7a);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"yellow\"]{\n    background: linear-gradient(to bottom, #d6bf47, #9d8923);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"orange\"]{\n    background: linear-gradient(to bottom, #fa7841, #c94b23);\n  }\n.IoPorts_port__1_a6J[data-port-color=\"pink\"]{\n    background: linear-gradient(to bottom, #fe8aeb, #e046c3);\n  }\n";
 var styles$4 = { "wrapper": "IoPorts_wrapper__3d2hh", "inputs": "IoPorts_inputs__2etkb", "transput": "IoPorts_transput__1wbHA", "portLabel": "IoPorts_portLabel__qOE7y", "port": "IoPorts_port__1_a6J", "outputs": "IoPorts_outputs__3JGh-", "controls": "IoPorts_controls__1dKFt" };
 styleInject(css$4);
 
@@ -5870,16 +5764,11 @@ var Input = function Input(_ref3) {
 
   var controls = localControls || defaultControls;
 
-  //start perp edit
-
-  //### this is causing a "Warning: Maximum update depth exceeded." error 
-  // React.useEffect(() => {
-  //   if (isConnected !== prevConnected) {
-  //     triggerRecalculation();
-  //   }
-  // }, [isConnected, prevConnected, triggerRecalculation]);
-
-  //end perp edit
+  React__default.useEffect(function () {
+    if (isConnected !== prevConnected) {
+      triggerRecalculation();
+    }
+  }, [isConnected, prevConnected, triggerRecalculation]);
 
   return React__default.createElement(
     "div",
@@ -6159,86 +6048,20 @@ var Node = function Node(_ref) {
       type = _ref.type,
       inputData = _ref.inputData,
       onDragStart = _ref.onDragStart,
-      renderNodeHeader = _ref.renderNodeHeader,
-      nodes = _ref.nodes;
-
+      renderNodeHeader = _ref.renderNodeHeader;
 
   var cache = React__default.useContext(CacheContext);
   var nodeTypes = React__default.useContext(NodeTypesContext);
   var nodesDispatch = React__default.useContext(NodeDispatchContext);
   var stageState = React__default.useContext(StageContext);
-
-  //start perp edit
-
-  var portTypes = React__default.useContext(PortTypesContext);
-
-  var currentNodeType = "";
-
-  if (type.startsWith("call function ")) {
-    var createdInputs = function createdInputs(nodeParent) {
-      var inputPorts = [portTypes["power"]];
-      var objToAdd = [];
-      var nameToAdd = [];
-
-      for (var p in nodeParent.inputData) {
-        if (p.startsWith("Parameter")) {
-          if (nodeParent.inputData[p].string !== '') {
-            objToAdd.push(JSON.parse(JSON.stringify(portTypes["variable"])));
-            nameToAdd.push(nodeParent.inputData[p].string);
-          }
-        }
-      }
-
-      if (objToAdd.length > 0) {
-        for (var _e in objToAdd) {
-          if (objToAdd[_e].label === "a variable") {
-            objToAdd[_e].label = nameToAdd[_e];
-            objToAdd[_e].name = nameToAdd[_e];
-          }
-          console.log("objToAdd e", objToAdd[_e]);
-        }
-        for (var e in objToAdd) {
-          inputPorts.push(objToAdd[e]);
-        }
-      }
-
-      //console.log("inputPorts", inputPorts);
-      return inputPorts;
-    };
-
-    //console.log("createdInputs : ", createdInputs(nodeParent))
-
-    var nodeParentID = type.slice(14);
-    var nodeParent = "";
-
-    for (var i in nodes) {
-      if (nodes[i].id === nodeParentID) {
-        nodeParent = nodes[i];
-      }
-    }
-
-    currentNodeType = nodeTypes["Call function"];
-    currentNodeType.label = "Call function: " + nodeParent.inputData.functionName.string;
-    currentNodeType.name = "Call function: " + nodeParent.inputData.functionName.string;
-    currentNodeType.description = "This nod will call the function " + nodeParent.inputData.functionName.string;
-
-    currentNodeType.inputs = createdInputs(nodeParent);
-
-    //console.log("currentNodeType.inputs", currentNodeType.inputs)
-  } else {
-    currentNodeType = nodeTypes[type];
-  }
-  // console.log("portTypes[power]", portTypes[power]({label: "Power", name: "powerIn"}));
-  // const currentNodeType = nodeTypes[type];
-
-  var _currentNodeType = currentNodeType,
-      label = _currentNodeType.label,
-      deletable = _currentNodeType.deletable,
-      _currentNodeType$inpu = _currentNodeType.inputs,
+  var currentNodeType = nodeTypes[type];
+  var label = currentNodeType.label,
+      deletable = currentNodeType.deletable,
+      _currentNodeType$inpu = currentNodeType.inputs,
       inputs = _currentNodeType$inpu === undefined ? [] : _currentNodeType$inpu,
-      _currentNodeType$outp = _currentNodeType.outputs,
+      _currentNodeType$outp = currentNodeType.outputs,
       outputs = _currentNodeType$outp === undefined ? [] : _currentNodeType$outp;
-  //end perp edit
+
 
   var nodeWrapper = React__default.useRef();
 
@@ -6355,10 +6178,9 @@ var Node = function Node(_ref) {
   };
 
   return React__default.createElement(
-    Draggable
-    // adding label, id
-    ,
-    { className: [styles$2.wrapper, label, id].join(" "),
+    Draggable,
+    {
+      className: [styles$2.wrapper, label, id].join(" "),
       style: {
         width: width,
         transform: "translate(" + x + "px, " + y + "px)"
@@ -7421,7 +7243,6 @@ var nodesReducer = function nodesReducer(nodes) {
             output = action.output;
 
         var inputIsNotConnected = !nodes[input.nodeId].connections.inputs[input.portName];
-
         if (inputIsNotConnected) {
           var allowCircular = circularBehavior === "warn" || circularBehavior === "allow";
           var newNodes = addConnection(nodes, input, output, portTypes);
@@ -7522,35 +7343,6 @@ var nodesReducer = function nodesReducer(nodes) {
         return _extends({}, nodes, defineProperty({}, newNodeId, newNode));
       }
 
-    //start perp edit
-    case "ADD_CALL_FUNCTION_NODE":
-      {
-        var _x4 = action.x,
-            _y = action.y,
-            _nodeType = action.nodeType,
-            _id2 = action.id,
-            _defaultNode = action.defaultNode;
-
-        var _newNodeId = _id2 || nanoid(10);
-        console.log("From Node Reducer - nodeType: ", _nodeType);
-        var _newNode = {
-          id: _newNodeId,
-          x: _x4,
-          y: _y,
-          type: "call function " + _nodeType.id,
-          width: 200,
-          connections: {
-            inputs: {},
-            outputs: {}
-          },
-          inputData: {}
-        };
-
-        return _extends({}, nodes, defineProperty({}, _newNodeId, _newNode));
-      }
-
-    //end perp edit
-
     case "REMOVE_NODE":
       {
         var nodeId = action.nodeId;
@@ -7563,13 +7355,13 @@ var nodesReducer = function nodesReducer(nodes) {
         var _newNodes = _extends({}, nodes);
         for (var key in _newNodes) {
           if (_newNodes[key].defaultNode) {
-            var _newNodeId2 = nanoid(10);
+            var _newNodeId = nanoid(10);
             var _newNodes$key = _newNodes[key],
-                _id3 = _newNodes$key.id,
-                _defaultNode2 = _newNodes$key.defaultNode,
+                _id2 = _newNodes$key.id,
+                _defaultNode = _newNodes$key.defaultNode,
                 node = objectWithoutProperties(_newNodes$key, ["id", "defaultNode"]);
 
-            _newNodes[_newNodeId2] = _extends({}, node, { id: _newNodeId2 });
+            _newNodes[_newNodeId] = _extends({}, node, { id: _newNodeId });
             delete _newNodes[key];
           }
         }
@@ -7595,13 +7387,13 @@ var nodesReducer = function nodesReducer(nodes) {
 
     case "SET_NODE_COORDINATES":
       {
-        var _x5 = action.x,
-            _y2 = action.y,
+        var _x4 = action.x,
+            _y = action.y,
             _nodeId2 = action.nodeId;
 
         return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2], {
-          x: _x5,
-          y: _y2
+          x: _x4,
+          y: _y
         })));
       }
 
@@ -7991,53 +7783,7 @@ exports.NodeEditor = function NodeEditor(_ref, ref) {
 
   var previousNodes = usePrevious$1(nodes);
 
-  var checkIfPortsExist = function checkIfPortsExist(nodes) {
-
-    console.log(nodes);
-    //for each node
-    for (var i in nodes) {
-      //get outputs
-      for (var outs in nodes[i].connections.outputs) {
-        //get connection
-        for (var connection in nodes[i].connections.outputs[outs]) {
-          //for each connection search all nodes
-          for (var toNodeID in nodes) {
-            //get the node that is being connected to
-            if (nodes[i].connections.outputs[outs][connection].nodeId === nodes[toNodeID].id) {
-              //see if that is a call function node
-              if (nodes[toNodeID].type.startsWith("call function ")) {
-                // is call function node has a port with the same name th
-
-                //console.log("p",p)
-
-
-                var nodeParentID = nodes[toNodeID].type.slice(14);
-                // get parent of call function node
-                for (var parentNode in nodes) {
-                  //go through all nodes again
-                  if (nodes[parentNode].id === nodeParentID) {
-                    //find the parent of the call function node
-                    for (var p in nodes[parentNode].inputData) {
-                      console.log("p", p);
-                      //get paramiters 
-                      if (p.startsWith("Parameter")) {
-                        console.log("nodes[parentNode].inputData[p].string: ", nodes[parentNode].inputData[p].string);
-                        // if the parent has a paramiter that the First node is connecting to then the connection is valid
-                        if (nodes[parentNode].inputData[p].string !== nodes[i].connections.outputs[outs][connection].portName) ;
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  };
-
   React__default.useEffect(function () {
-    checkIfPortsExist(nodes);
     if (previousNodes && onChange && nodes !== previousNodes) {
       onChange(nodes);
     }
@@ -8090,14 +7836,12 @@ exports.NodeEditor = function NodeEditor(_ref, ref) {
                     React__default.createElement(
                       Stage,
                       {
-                        nodes: nodes,
                         editorId: editorId,
                         scale: stageState.scale,
                         translate: stageState.translate,
                         spaceToPan: spaceToPan,
                         disablePan: disablePan,
                         disableZoom: disableZoom,
-                        manualDispatchNodes: dispatchNodes,
                         dispatchStageState: dispatchStageState,
                         dispatchComments: dispatchComments,
                         disableComments: disableComments || hideComments,
@@ -8160,8 +7904,7 @@ exports.NodeEditor = function NodeEditor(_ref, ref) {
                           onDragEnd: triggerRecalculation,
                           onDragStart: recalculateStageRect,
                           renderNodeHeader: renderNodeHeader,
-                          key: node.id,
-                          nodes: nodes
+                          key: node.id
                         }));
                       }),
                       React__default.createElement(Connections, { nodes: nodes, editorId: editorId }),

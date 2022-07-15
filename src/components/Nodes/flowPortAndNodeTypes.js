@@ -15,6 +15,14 @@ flowPortAndNodeTypes
 
   //port types
   .addPortType({
+    type: "export",
+    name: "export",
+    label: "export",
+    color: Colors.pink,
+    noControls: true,
+  })
+
+  .addPortType({
     type: "power",
     name: "power",
     label: "Power",
@@ -106,7 +114,8 @@ flowPortAndNodeTypes
     inputs: ports => (data, connections) => {
       var parameterCount = 1
       let inputPorts = [
-      ports.power({label: "Power", name: "powerIn"}),
+      ports.export({label: "Export", name: "export"}),
+      //ports.power({label: "Power", name: "powerIn"}),
       ports.string({label: "function name", name: "functionName",hidePort: true})
       ]
       
@@ -138,23 +147,31 @@ flowPortAndNodeTypes
       return inputPorts
     },
     outputs: ports => (data, connections) => {
-      var powerCount = 1
-      var parameterCount = 0
+      let parameterCount = 0
       let outputPorts = []
       let powerNo = 1
       let parameterNoForLableSet = 1
-
-      //count outputs
-      for(var i in connections.outputs) {
+      let powerCount = Object.keys(connections.outputs).length + 1
+      let reverseKeys = Object.keys(connections.outputs).reverse()
         
-        if (i.substring(0, 8) === "powerOut"){
-          powerCount += 1
+      // go through connection in revers order 
+      for(let i in reverseKeys) {
+        // decrease the count each non connected outpu found. and stop when you find a connected port.
+        if (Object.keys(connections.outputs[reverseKeys[i]]).length === 0){
+          powerCount -=1
+        } else {
+          break
         }
 
-        // if (i.substring(0, 12) === "parameterOut"){
-        //     parameterCount += 1
-        // } 
       }
+      
+      //add outputs
+      while (powerCount >= 1){
+        outputPorts.push(ports.power({ label: "Power "+ powerNo, name: "powerOut "+ powerNo}))
+        powerCount -= 1
+        powerNo += 1
+      }
+
       for(let i in data){
         for(var a = 1; a < parameterCount+2; a++){
           if (i === "Parameter " + a + " name"){
@@ -164,14 +181,6 @@ flowPortAndNodeTypes
           }
         }
       }
-
-      //add outputs
-      while (powerCount >= 1){
-        outputPorts.push(ports.power({ label: "Power "+ powerNo, name: "powerOut "+ powerNo}))
-        powerCount -= 1
-        powerNo += 1
-      }
-
 
       while (parameterCount >= 1){
         //get param name 
@@ -196,24 +205,40 @@ flowPortAndNodeTypes
   })
 
   .addNodeType({
+    type: "return",
+    label: "return",
+    description: "This node declares the fuctions returns variable",
+    inputs: ports => [
+      ports.power(),
+      ports.variable({label: "return", name: "return"})
+    ],
+    outputs: []
+  })
+
+
+  .addNodeType({
     type: "start",
     label: "start",
     addable: false,
     deletable: false,
     description: "The files running",
     outputs: ports => (data, connections) => {
-      var powerCount = 1
+      var powerCount = Object.keys(connections.outputs).length + 1
       let outputPorts = []
       let powerNo = 1
-
-      //count outputs
-      for(var i in connections.outputs) {
-        
-        if (i.substring(0, 8) === "powerOut"){
-          powerCount += 1
+      let reverseKeys = Object.keys(connections.outputs).reverse()
+       
+      // go through connection in revers order 
+      for(var i in reverseKeys) {
+        // decrease the count each non connected outpu found. and stop when you find a connected port.
+        if (Object.keys(connections.outputs[reverseKeys[i]]).length === 0){
+          powerCount -=1
+        } else {
+          break
         }
-      }
 
+      }
+      
       //add outputs
       while (powerCount >= 1){
         outputPorts.push(ports.power({ label: "Power "+ powerNo, name: "powerOut "+ powerNo}))
@@ -318,6 +343,21 @@ flowPortAndNodeTypes
     ]
   })
 
+  .addNodeType({
+    type: "Call function",
+    label: "Call function",
+    description: "Call function",
+    addable: false,
+    inputs: ports => (data, connections) => {
+      let inputports = [ports.power()]
+      return inputports
+    },
+    outputs: ports => [
+      ports.power(),
+      ports.variable({label: "return", name: "return"})
+    ]
+  })
+
 
   .addNodeType({
     type: "export_default",
@@ -326,7 +366,7 @@ flowPortAndNodeTypes
     deletable: false,
     description: "Start from here when file is run",
     outputs: ports => [
-      ports.power({label: "Power", name: "powerOut"})
+      ports.export({label: "Export", name: "export"})
     ]
   })
 

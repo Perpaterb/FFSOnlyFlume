@@ -1,6 +1,7 @@
 import React from 'react'
+//import { NodeEditor } from "flume";
 import { NodeEditor } from "./components/flume/index";
-//import { NodeEditor } from "./components/flume/src/index";
+//import { NodeEditor } from "./components/flume/indexDefault";
 import flowPortAndNodeTypes from "./components/Nodes/flowPortAndNodeTypes.js"
 
 const App = () => {
