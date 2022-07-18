@@ -4464,6 +4464,13 @@ var Stage = function Stage(_ref) {
       functionList.push(nodes[i]);
     }
   }
+
+  var variableList = [];
+  for (var _i in nodes) {
+    if (nodes[_i].type === "set variable") {
+      variableList.push(nodes[_i]);
+    }
+  }
   //end perp edit
 
   React__default.useEffect(function () {
@@ -4579,6 +4586,7 @@ var Stage = function Stage(_ref) {
     var wrapperRect = wrapper.current.getBoundingClientRect();
     var x = byScale(menuCoordinates.x - wrapperRect.x - wrapperRect.width / 2) + byScale(translate.x);
     var y = byScale(menuCoordinates.y - wrapperRect.y - wrapperRect.height / 2) + byScale(translate.y);
+
     if (internalType === "comment") {
       //start perp edit
       setMenuOpen(false);
@@ -4594,23 +4602,23 @@ var Stage = function Stage(_ref) {
       //When new option on context menu is clicked
     } else if (internalType === "get_variable") {
 
-      setMenuOptions([{
-        label: "variable",
-        value: "variable",
-        description: "variable description"
-      }]);
+      var variableNameList = [];
+      for (var _i2 in variableList) {
+        console.log(variableList);
+        variableNameList.push({ label: variableList[_i2].inputData.variableName.string, value: variableList[_i2].inputData.variableName.string, description: "", sortIndex: _i2, node: { label: "get variable " + variableList[_i2].inputData.variableName.string, value: "get variable " + variableList[_i2].inputData.variableName.string, details: variableList[_i2] } });
+      }
 
-      console.log("create a new ContextMenu for get_variable");
+      setMenuOptions(variableNameList);
     } else if (internalType === "call_function") {
 
       var functionNameList = [];
-      for (var _i in functionList) {
-        functionNameList.push({ label: functionList[_i].inputData.functionName.string, value: functionList[_i].inputData.functionName.string, description: "", sortIndex: _i, node: { label: "call function " + functionList[_i].inputData.functionName.string, value: "call function " + functionList[_i].inputData.functionName.string, details: functionList[_i] } });
+      for (var _i3 in functionList) {
+        functionNameList.push({ label: functionList[_i3].inputData.functionName.string, value: functionList[_i3].inputData.functionName.string, description: "", sortIndex: _i3, node: { label: "call function " + functionList[_i3].inputData.functionName.string, value: "call function " + functionList[_i3].inputData.functionName.string, details: functionList[_i3] } });
       }
       setMenuOptions(functionNameList);
     } else if (node.label.startsWith("call function ")) {
 
-      console.log("create node :", node.details);
+      console.log("create CALL_FUNCTION node :", node.details);
 
       dispatchNodes({
         type: "ADD_CALL_FUNCTION_NODE",
@@ -4623,16 +4631,25 @@ var Stage = function Stage(_ref) {
       setMenuOpen(false);
     } else if (node.label.startsWith("get variable ")) {
 
-      console.log("create node :", node.details);
+      console.log("create GET_VARIABLE node :", node.details);
+
+      dispatchNodes({
+        type: "ADD_GET_VARIABLE_NODE",
+        x: x,
+        y: y,
+        nodeType: node.details
+      });
 
       setMenuOptions(menuOptionsStage1stRight);
       setMenuOpen(false);
 
       //end perp edit
     } else {
+
       //start perp edit
       setMenuOpen(false);
       setMenuOptions(menuOptionsStage1stRight);
+
       console.log("create this node", node);
       //end perp edit
       dispatchNodes({
@@ -4675,30 +4692,6 @@ var Stage = function Stage(_ref) {
       };
     }
   }, [handleWheel, disableZoom]);
-
-  //start perp edit
-  // const menuOptions = React.useMemo(
-  //   () => {
-  //     const options = orderBy(
-  //       Object.values(nodeTypes)
-  //         .filter(node => node.addable !== false)
-  //         .map(node => ({
-  //           value: node.type,
-  //           label: node.label,
-  //           description: node.description,
-  //           sortIndex: node.sortIndex,
-  //           node
-  //         })),
-  //       ["sortIndex", "label"]
-  //     )
-  //     if (!disableComments) {
-  //       options.push({ value: "comment", label: "Comment", description: "A comment for documenting nodes", internalType: "comment" })
-  //     }
-  //     return options
-  //   },
-  //   [nodeTypes, disableComments]
-  // );
-  //end perp edit
 
   return React__default.createElement(
     Draggable,
@@ -6191,11 +6184,10 @@ var Node = function Node(_ref) {
 
       if (objToAdd.length > 0) {
         for (var _e in objToAdd) {
-          if (objToAdd[_e].label === "a variable") {
+          if (objToAdd[_e].name === "variable") {
             objToAdd[_e].label = nameToAdd[_e];
             objToAdd[_e].name = nameToAdd[_e];
           }
-          console.log("objToAdd e", objToAdd[_e]);
         }
         for (var e in objToAdd) {
           inputPorts.push(objToAdd[e]);
@@ -6205,8 +6197,6 @@ var Node = function Node(_ref) {
       //console.log("inputPorts", inputPorts);
       return inputPorts;
     };
-
-    //console.log("createdInputs : ", createdInputs(nodeParent))
 
     var nodeParentID = type.slice(14);
     var nodeParent = "";
@@ -6220,11 +6210,23 @@ var Node = function Node(_ref) {
     currentNodeType = nodeTypes["Call function"];
     currentNodeType.label = "Call function: " + nodeParent.inputData.functionName.string;
     currentNodeType.name = "Call function: " + nodeParent.inputData.functionName.string;
-    currentNodeType.description = "This nod will call the function " + nodeParent.inputData.functionName.string;
+    currentNodeType.description = "This node will call the function " + nodeParent.inputData.functionName.string;
 
     currentNodeType.inputs = createdInputs(nodeParent);
+  } else if (type.startsWith("Get variable ")) {
+    var _nodeParentID = type.slice(13);
+    var _nodeParent = "";
 
-    //console.log("currentNodeType.inputs", currentNodeType.inputs)
+    for (var _i in nodes) {
+      if (nodes[_i].id === _nodeParentID) {
+        _nodeParent = nodes[_i];
+      }
+    }
+
+    currentNodeType = nodeTypes["get variable"];
+    currentNodeType.label = "get variable: " + _nodeParent.inputData.variableName.string;
+    currentNodeType.name = "get variable: " + _nodeParent.inputData.variableName.string;
+    currentNodeType.description = "This node get retrieves the variable " + _nodeParent.inputData.variableName.string;
   } else {
     currentNodeType = nodeTypes[type];
   }
@@ -7532,7 +7534,7 @@ var nodesReducer = function nodesReducer(nodes) {
             _defaultNode = action.defaultNode;
 
         var _newNodeId = _id2 || nanoid(10);
-        console.log("From Node Reducer - nodeType: ", _nodeType);
+        //console.log("From Node Reducer - nodeType: ",nodeType)
         var _newNode = {
           id: _newNodeId,
           x: _x4,
@@ -7549,6 +7551,32 @@ var nodesReducer = function nodesReducer(nodes) {
         return _extends({}, nodes, defineProperty({}, _newNodeId, _newNode));
       }
 
+    case "ADD_GET_VARIABLE_NODE":
+      {
+        var _x5 = action.x,
+            _y2 = action.y,
+            _nodeType2 = action.nodeType,
+            _id3 = action.id,
+            _defaultNode2 = action.defaultNode;
+
+        var _newNodeId2 = _id3 || nanoid(10);
+        //console.log("From Node Reducer - nodeType: ",nodeType)
+        var _newNode2 = {
+          id: _newNodeId2,
+          x: _x5,
+          y: _y2,
+          type: "Get variable " + _nodeType2.id,
+          width: 200,
+          connections: {
+            inputs: {},
+            outputs: {}
+          },
+          inputData: {}
+        };
+
+        return _extends({}, nodes, defineProperty({}, _newNodeId2, _newNode2));
+      }
+
     //end perp edit
 
     case "REMOVE_NODE":
@@ -7563,13 +7591,13 @@ var nodesReducer = function nodesReducer(nodes) {
         var _newNodes = _extends({}, nodes);
         for (var key in _newNodes) {
           if (_newNodes[key].defaultNode) {
-            var _newNodeId2 = nanoid(10);
+            var _newNodeId3 = nanoid(10);
             var _newNodes$key = _newNodes[key],
-                _id3 = _newNodes$key.id,
-                _defaultNode2 = _newNodes$key.defaultNode,
+                _id4 = _newNodes$key.id,
+                _defaultNode3 = _newNodes$key.defaultNode,
                 node = objectWithoutProperties(_newNodes$key, ["id", "defaultNode"]);
 
-            _newNodes[_newNodeId2] = _extends({}, node, { id: _newNodeId2 });
+            _newNodes[_newNodeId3] = _extends({}, node, { id: _newNodeId3 });
             delete _newNodes[key];
           }
         }
@@ -7595,13 +7623,13 @@ var nodesReducer = function nodesReducer(nodes) {
 
     case "SET_NODE_COORDINATES":
       {
-        var _x5 = action.x,
-            _y2 = action.y,
+        var _x6 = action.x,
+            _y3 = action.y,
             _nodeId2 = action.nodeId;
 
         return _extends({}, nodes, defineProperty({}, _nodeId2, _extends({}, nodes[_nodeId2], {
-          x: _x5,
-          y: _y2
+          x: _x6,
+          y: _y3
         })));
       }
 

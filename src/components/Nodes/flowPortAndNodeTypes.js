@@ -59,7 +59,7 @@ flowPortAndNodeTypes
   .addPortType({
     type: "variable",
     name: "variable",
-    label: "a variable",
+    label: "variable",
     acceptTypes: ["string", "variable", "boolean"],
     color: Colors.blue,
     controls: [
@@ -215,6 +215,17 @@ flowPortAndNodeTypes
     outputs: []
   })
 
+  .addNodeType({
+    type: "get variable",
+    label: "get variable",
+    description: "This node get retrieves the variable",
+    addable: false,
+    inputs: [],
+    outputs: ports => [
+      ports.variable({label: " ", name: "variable"})
+    ]
+  })
+
 
   .addNodeType({
     type: "start",
@@ -277,67 +288,121 @@ flowPortAndNodeTypes
   })
 
   .addNodeType({
-    type: "make_array",
-    label: "make_array",
+    type: "make array",
+    label: "make array",
     description: "Create an array",
     inputs: ports => (data, connections) => {
-      var itemCount = 1
-      let outputPorts = []
+      let itemCount = 1
+      let dataCount = []
+      let reverseconectionKeys = Object.keys(connections.inputs).reverse()
+      let inputPorts = []
       let itemNo = 1
+      let lastDataItemNumber = 0
+      let lastConnectItemNumber = 0
 
-      //count items in
-      for(var i in data) {
+      for(let i in data) {
         if (i.substring(0, 4) === "item"){
           if (data[i].variable !== ''){
-            itemCount += 1
-          }
+            dataCount.push(i)
+          } 
+        }
+      }
+
+      let reverseDataKeys = dataCount.reverse()
+
+      if (reverseconectionKeys.length > 0) {       
+        lastConnectItemNumber = Number(reverseconectionKeys[0].slice(4))
+      }
+      if (reverseDataKeys.length > 0) {
+        lastDataItemNumber = Number(reverseDataKeys[0].slice(4))
+      }
+
+      if (lastDataItemNumber > lastConnectItemNumber){
+        if (lastDataItemNumber > 0){
+          itemCount = lastDataItemNumber +1
+        }
+      } else {
+        if (lastConnectItemNumber > 0){
+          itemCount = lastConnectItemNumber +1
         }
       }
 
       //add items in
       while (itemCount >= 1){
-        outputPorts.push(ports.variable({ label: "item "+ itemNo, name: "item"+ itemNo}))
+        inputPorts.push(ports.variable({ label: "item "+ itemNo, name: "item"+ itemNo}))
         itemCount -= 1
         itemNo += 1
       }
 
-      return outputPorts
+      return inputPorts
     },
+
     outputs: ports => [
       ports.variable({label: "array", name: "array"})
     ]
   })
 
   .addNodeType({
-    type: "make_object",
-    label: "make_object",
+    type: "make object",
+    label: "make object",
     description: "Create an object",
     inputs: ports => (data, connections) => {
-      var itemCount = 1
-      let outputPorts = []
+      let itemCount = 1
+      let dataCount = []
+      let connectionsCount = []
+      let inputPorts = []
       let itemNo = 1
+      let lastDataItemNumber = 0
+      let lastConnectItemNumber = 0
 
-      //count items in
-      for(var i in data) {
+      for(let i in data) {
         if (i.substring(0, 3) === "key"){
           if (data[i].string !== ''){
-            itemCount += 1
-          }
+            dataCount.push(i)
+          } 
+        }
+      }
+
+      for(let i in Object.keys(connections.inputs)) {
+        console.log("i", Object.keys(connections.inputs)[i])
+        if (Object.keys(connections.inputs)[i].substring(0, 3) === "key"){
+            connectionsCount.push(Object.keys(connections.inputs)[i])
+        }
+      }
+
+      let reverseDataKeys = dataCount.reverse()
+      let reverseconectionKeys = connectionsCount.reverse()
+
+      if (reverseconectionKeys.length > 0) {       
+        lastConnectItemNumber = Number(reverseconectionKeys[0].slice(3))
+      }
+      if (reverseDataKeys.length > 0) {
+        lastDataItemNumber = Number(reverseDataKeys[0].slice(3))
+      }
+
+      if (lastDataItemNumber > lastConnectItemNumber){
+        if (lastDataItemNumber > 0){
+          itemCount = lastDataItemNumber +1
+        }
+      } else {
+        if (lastConnectItemNumber > 0){
+          itemCount = lastConnectItemNumber +1
         }
       }
 
       //add items in
       while (itemCount >= 1){
-        outputPorts.push(
+        inputPorts.push(
           ports.string({ label: "key "+ itemNo, name: "key"+ itemNo}),
           ports.variable({ label: "item "+ itemNo, name: "item"+ itemNo})
-          )
+        )
         itemCount -= 1
         itemNo += 1
       }
 
-      return outputPorts
+      return inputPorts
     },
+
     outputs: ports => [
       ports.variable({label: "object", name: "object"})
     ]
@@ -371,28 +436,16 @@ flowPortAndNodeTypes
   })
 
   .addNodeType({
-    type: "set_variable_with_let",
-    label: "set_variable_with_let",
-    description: "Create a variable and set it value",
+    type: "set variable",
+    label: "set variable",
+    description: "Set a variable if already created if not create it",
     inputs: ports => [
       ports.power(),
-      ports.string({name: "name",label: "name",hidePort: true}),
-      ports.variable({name: "value",label: "set value"}),
+      ports.string({name: "variableName",label: "variable name", hidePort: true}),
+      ports.variable(),
     ]
   })
   
-  .addNodeType({
-    type: "get_variable",
-    label: "get_variable",
-    description: "Retrieve a variable",
-    inputs: ports => [
-      ports.string({name: "variableName",label: "variable name",hidePort: true}),
-    ],
-    outputs: ports => [
-      ports.variable({label: "variable", name: "variable"})
-    ]
-  })
-
   .addNodeType({
     type: "console.log",
     label: "console.log",
